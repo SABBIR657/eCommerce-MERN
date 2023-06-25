@@ -1,5 +1,5 @@
 # E commerence mern stack project 
-# make the environment 
+# developed by SABBIR RAHMAN
 
 1. express server  -> express
 2. http request & response
@@ -13,3 +13,7 @@
 10. mongodb database connection
 11. schema and model for user
 12. create seed route for testing
+13. searchByName and pagination functionality
+14. responseHandler controller for error or success
+15. GET /api/users/:id -> get a single user by id
+16. services in the backend

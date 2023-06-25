@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const userRouter = require("./routers/userRouter");
 const { seedUser } = require("./controllers/seedController");
 const seedRouter = require("./routers/seedRouter");
+const { errorResponse } = require("./controllers/responseController");
 
 
 
@@ -78,11 +79,10 @@ app.use((req, res, next)=>{
 app.use((err, req, res, next)=>{
    
   // res.status(500).send("something wrong");
-
-  return res.status(err.status || 500).json({
-    sucess: false,
-    message:  err.message,
-  });
+  return errorResponse(res, {
+    statusCode: err.status,
+    message: err.message
+  })
 
  });
 
