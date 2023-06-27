@@ -17,3 +17,9 @@
 14. responseHandler controller for error or success
 15. GET /api/users/:id -> get a single user by id
 16. services in the backend
+17. DELETE /api/users/:id -> delete a single user
+18. Refactoring & reusability, dynamic
+19. add express validator middleware
+20. add multer middleware for file upload
+21. POST/api/users -> create an user
+22. PUT/api/users/:id -> update a single user by id
