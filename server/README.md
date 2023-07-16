@@ -19,7 +19,11 @@
 16. services in the backend
 17. DELETE /api/users/:id -> delete a single user
 18. Refactoring & reusability, dynamic
-19. add express validator middleware
-20. add multer middleware for file upload
-21. POST/api/users -> create an user
-22. PUT/api/users/:id -> update a single user by id
+19. deleteImage helper
+20. add express validator middleware
+21. add multer middleware for file upload
+22. POST/api/users/process-register ->process the registration
+23. POST/api/users/verify -> verify + register into database
+
+24. PUT/api/users/:id -> update a single user by id
+25. jwt (json webtoken)

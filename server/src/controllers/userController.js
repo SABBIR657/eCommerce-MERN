@@ -1,11 +1,14 @@
 const createError = require("http-errors");
-const fs = require("fs");
+const fs = require("fs").promises;
 
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 
 const { findWithId } = require("../services/findItem");
 const { error } = require("console");
+const { deleteImage } = require("../helper/deleteImage");
+const { createJSONWebToken } = require("../helper/jsonwebtoken");
+const { jwtactivationKey } = require("../secret");
 
 
 
@@ -85,18 +88,9 @@ const getUserById =async (req, res, next) =>{
      
 
       const userImagePath = user.image;
-      fs.access(userImagePath, (err)=>{
-         if(err){
-            console.error('user image does not exist');
-         }
-         else{
-            fs.unlink(userImagePath, (err)=>{
-               if(err) throw err;
-                  console.log("user image deleted")
-               
-            })
-         }
-      })
+
+      deleteImage(userImagePath);
+
 
       await User.findByIdAndDelete({_id: id, isAdmin: false,});
 
@@ -113,4 +107,37 @@ const getUserById =async (req, res, next) =>{
       }
 };
 
-module.exports = {getUsers, getUserById, deleteUserById};
+const processRegister =async (req, res, next) =>{
+   try {
+   
+      const {name, email, password, phone, address} = req.body;
+
+      const userExists = await User.exists({email: email});
+
+      if(userExists){
+         throw createError(409, 'user with this email already exits please sign in');
+      }
+
+      // create jwt
+
+    const token =  createJSONWebToken({name, email, password, phone, address}, jwtactivationKey, '10m');
+
+    
+
+  
+  
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: 'user created succesfully',
+      payload: {token},
+    });
+
+   } catch (error) {
+     
+      next(error);
+   }
+};
+
+
+module.exports = {getUsers, getUserById, deleteUserById, processRegister};
