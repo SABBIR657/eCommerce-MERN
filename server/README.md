@@ -29,3 +29,4 @@
 25. jwt (json webtoken)
 26. send email
 27. file upload
+28. PUT /api/users/:id -> update a single user by id

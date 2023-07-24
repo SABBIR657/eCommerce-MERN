@@ -6,7 +6,7 @@ const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 
 const { findWithId } = require("../services/findItem");
-const { error } = require("console");
+const { error, Console } = require("console");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJSONWebToken } = require("../helper/jsonwebtoken");
 const { jwtactivationKey, clientURL } = require("../secret");
@@ -114,15 +114,32 @@ const processRegister =async (req, res, next) =>{
    
       const {name, email, password, phone, address} = req.body;
 
+      const image = req.file;
+
+      if(!image){
+         throw createError(400, "image is required")
+      }
+
+      if(image.size > 1024 * 1024 *2 ){
+         throw createError(400, "image is too large support <2MB file");
+      }
+
+
+     
+
+
+      const imageBufferString = image.buffer.toString('base64');
+
+
       const userExists = await User.exists({email: email});
 
       if(userExists){
          throw createError(409, 'user with this email already exits please sign in');
-      }
+      };
 
       // create jwt
 
-    const token =  createJSONWebToken({name, email, password, phone, address}, jwtactivationKey, '10m');
+    const token =  createJSONWebToken({name, email, password, phone, address, image: imageBufferString}, jwtactivationKey, '10m');
 
 
     //prepare email
@@ -209,5 +226,83 @@ const activateUserAccount =async (req, res, next) =>{
    }
 };
 
+const  updateUserById =async (req, res, next) =>{
+   try {
+   const userID = req.params.id; 
 
-module.exports = {getUsers, getUserById, deleteUserById, processRegister, activateUserAccount};
+   const options = {password: 0};
+   await findWithId(User,userID, options);
+
+   
+   const updateOptions = {new: true, runValidators:true, context: 'query'}; //we set some rules in shcema for appyling this rule we use here runValidators and context
+
+   let updates = {}; 
+
+   // if(req.body.name){
+   //    updates.name = req.body.name;
+   // }
+
+   // if(req.body.password){
+   //    updates.password = req.body.password;
+   // }
+
+   // if(req.body.phone){
+   //    updates.phone = req.body.phone;
+   // }
+
+   // if(req.body.address){
+   //    updates.address = req.body.address;
+   // }
+
+   for(let key in req.body){
+      if(['name', 'password', 'phone', 'address'].includes(key)){
+         updates[key] = req.body[key];
+      } 
+
+      else if(['name'].includes(key)){
+         throw createError(400, "email can not be updated");
+      } 
+   }
+
+   const image = req.file;
+
+   if(image){
+      //image size max 2MB
+
+      if(image.size > 1024 * 1024 *2 ){
+         throw createError(400, "image is too large support <2MB file");
+      }
+
+      updates.image = image.buffer.toString('base64');
+   }
+
+   const updatedUser = await User.findByIdAndUpdate(userID, updates, updateOptions).select("-password"); //after updatation we dont want to see the password field
+
+   //for excluse somehting form the list give the email mistakenly
+   //delete updates.email;
+
+
+   if(!updatedUser){
+      throw createError(404, "user with this id does not exist");
+   }
+
+  
+
+   
+
+  
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: 'user updated succesfully',
+      payload: updatedUser,
+    });
+
+   } catch (error) {
+     
+      next(error);
+   }
+};
+
+
+module.exports = {getUsers, getUserById, deleteUserById, processRegister, activateUserAccount, updateUserById};
